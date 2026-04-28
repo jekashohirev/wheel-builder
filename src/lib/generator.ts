@@ -43,14 +43,14 @@ function buildPopupConfig(config: WidgetConfig) {
     title: {
       active: true,
       text: config.title,
-      css: baseCss(`text-align: left; font-size: 36px; line-height: 40px; font-weight: 600; color: ${titleColor}; margin-bottom: 10px; width: 100%;`),
-      cssMobile: baseCss(`font-size: 26px; line-height: 30px; font-weight: 600; color: ${titleColor}; text-align:center; margin-bottom: 10px;`),
+      css: baseCss(`text-align: left; font-size: 36px; line-height: 40px; font-weight: 600; color: ${titleColor}; margin-bottom: 10px; width: 100%; white-space: pre-line;`),
+      cssMobile: baseCss(`font-size: 26px; line-height: 30px; font-weight: 600; color: ${titleColor}; text-align:center; margin-bottom: 10px; white-space: pre-line;`),
     },
     text: {
       active: true,
       text: config.subtitle,
-      css: baseCss(`text-align: left; font-size: 16px; line-height: 24px; color: ${subText}; margin-bottom: 20px; width: 100%;`),
-      cssMobile: baseCss(`font-size: 14px; line-height: 20px; text-align:center; margin-bottom: 20px;`),
+      css: baseCss(`text-align: left; font-size: 16px; line-height: 24px; color: ${subText}; margin-bottom: 20px; width: 100%; white-space: pre-line;`),
+      cssMobile: baseCss(`font-size: 14px; line-height: 20px; text-align:center; margin-bottom: 20px; white-space: pre-line;`),
     },
     titleThanks: {
       active: true,
@@ -61,8 +61,8 @@ function buildPopupConfig(config: WidgetConfig) {
     textThanks: {
       active: true,
       text: config.thankYou?.subtitle ?? 'Мы отправили информацию на почту. Если письмо не придет в течение 5 минут, проверьте папку «Спам».',
-      css: baseCss(`text-align: left; font-size: 16px; line-height: 24px; font-weight: 400; color: ${subText}; margin-bottom: 20px; width: 100%;`),
-      cssMobile: baseCss(`font-size: 14px; line-height: 20px; font-weight: 400; text-align:center; margin-bottom: 20px;`),
+      css: baseCss(`text-align: left; font-size: 16px; line-height: 24px; font-weight: 400; color: ${subText}; margin-bottom: 20px; width: 100%; white-space: pre-line;`),
+      cssMobile: baseCss(`font-size: 14px; line-height: 20px; font-weight: 400; text-align:center; margin-bottom: 20px; white-space: pre-line;`),
     },
     phone: {
       active: config.enabledFields.phone,
@@ -1084,8 +1084,31 @@ var popupContent = ${escJsString(popupContent)};
 
 (function(){
   var frameId = 'carrot_frame_{{ sending_id }}';
+  var cqScroll = window.__cqWheelPopupHostScroll ||
+    (window.__cqWheelPopupHostScroll = { locked: false, htmlOverflow: '', bodyOverflow: '' });
+  function unlockHostScroll() {
+    if (!cqScroll.locked) return;
+    document.documentElement.style.overflow = cqScroll.htmlOverflow;
+    document.body.style.overflow = cqScroll.bodyOverflow;
+    cqScroll.locked = false;
+  }
+  function lockHostScroll() {
+    unlockHostScroll();
+    var h = document.documentElement;
+    var b = document.body;
+    cqScroll.htmlOverflow = h.style.overflow || '';
+    cqScroll.bodyOverflow = b.style.overflow || '';
+    h.style.overflow = 'hidden';
+    b.style.overflow = 'hidden';
+    cqScroll.locked = true;
+  }
+
   var existing = document.getElementById(frameId);
-  if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+  if (!existing && cqScroll.locked) unlockHostScroll();
+  if (existing && existing.parentNode) {
+    unlockHostScroll();
+    existing.parentNode.removeChild(existing);
+  }
 
   var iframe = document.createElement('iframe');
   iframe.id = frameId;
@@ -1100,6 +1123,15 @@ var popupContent = ${escJsString(popupContent)};
   iframe.style.opacity = '0';
 
   document.body.appendChild(iframe);
+  lockHostScroll();
+
+  var cqScrollMo = new MutationObserver(function() {
+    if (!iframe.parentNode || !document.body.contains(iframe)) {
+      unlockHostScroll();
+      cqScrollMo.disconnect();
+    }
+  });
+  cqScrollMo.observe(document.body, { childList: true, subtree: false });
 
   var iframeContent = (iframe.contentWindow || iframe.contentDocument);
   if (iframeContent.document) iframeContent = iframeContent.document;
@@ -1168,8 +1200,8 @@ export function buildPreviewHtml(config: WidgetConfig): string {
     canvas{border-radius:999px; background: transparent;}
     .pointer{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:22px solid ${config.buttonColor || config.theme.accent};}
     .side{display:flex;flex-direction:column;gap:12px;align-items:stretch;justify-content:center;}
-    .h1{font-size:24px;font-weight:700;line-height:1.15;}
-    .p{font-size:14px;line-height:1.4;color:${subText};}
+    .h1{font-size:24px;font-weight:700;line-height:1.15;white-space:pre-line;}
+    .p{font-size:14px;line-height:1.4;color:${subText};white-space:pre-line;}
     .field{display:block;}
     .field__label{font-size:12px;color:${subText};margin-bottom:6px;}
     .input{width:100%;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:${text};padding:0 12px;outline:none;}

@@ -85,17 +85,20 @@ function TextAreaInput({
   value,
   onChange,
   placeholder,
+  heightClass = 'h-[74px]',
 }: {
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  /** Tailwind height class, e.g. h-[64px] */
+  heightClass?: string
 }) {
   return (
     <textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-white border border-[#E6E6E6] rounded-lg px-3 py-[10px] text-[14px] text-[#262626] leading-[18px] placeholder:text-[#8F8F8F] outline-none focus:border-[#8F8F8F] transition-colors h-[74px] resize-none"
+      className={`w-full bg-white border border-[#E6E6E6] rounded-lg px-3 py-[10px] text-[14px] text-[#262626] leading-[18px] placeholder:text-[#8F8F8F] outline-none focus:border-[#8F8F8F] transition-colors resize-none ${heightClass}`}
     />
   )
 }
@@ -532,10 +535,11 @@ export function ConfigPanel() {
             <div className="flex flex-col gap-4 px-4">
               <div className="flex flex-col gap-1.5">
                 <FieldLabel>Заголовок</FieldLabel>
-                <TextInput
+                <TextAreaInput
                   value={config.title}
                   onChange={(v) => set({ title: v })}
                   placeholder="Введите заголовок"
+                  heightClass="h-[64px]"
                 />
               </div>
 
@@ -545,6 +549,7 @@ export function ConfigPanel() {
                   value={config.subtitle}
                   onChange={(v) => set({ subtitle: v })}
                   placeholder="Введите подзаголовок"
+                  heightClass="h-[64px]"
                 />
               </div>
             </div>
@@ -577,6 +582,7 @@ export function ConfigPanel() {
                   set({ thankYou: { ...(config.thankYou ?? DEFAULT_CONFIG.thankYou), subtitle: v } })
                 }
                 placeholder="Введите текст"
+                heightClass="h-[76px]"
               />
             </div>
           </>
